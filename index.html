@@ -11,7 +11,7 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #222;
+    --bg: #0f0f0f; --surface: #1a1a1a;
     --accent: #1a9e75; --warn: #ba7517; --danger: #e24b4a;
     --text: #f0f0f0; --muted: #666; --border: #2a2a2a;
     --radius: 14px; --radius-sm: 8px;
@@ -19,16 +19,20 @@
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', system-ui, sans-serif; min-height: 100vh; padding: env(safe-area-inset-top, 20px) 16px 80px; max-width: 480px; margin: 0 auto; }
   .lbl { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
-  input { font-family: 'DM Sans', system-ui, sans-serif; }
-  button { font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; }
+  input, button, select { font-family: 'DM Sans', system-ui, sans-serif; }
+  button { cursor: pointer; }
   .food-item { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 7px; border: 1px solid var(--border); }
   .tag { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .meal-section { margin-bottom: 16px; }
+  .meal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .meal-title { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .meal-kcal { font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
 
 <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:22px; padding-top:8px;">
-  <div style="font-size:36px; font-weight:500; letter-spacing:2px; color:var(--text);">KCAL</div>
+  <div style="font-size:36px; font-weight:500; letter-spacing:2px;">KCAL</div>
   <div style="font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase;">трекер калорий</div>
 </div>
 
@@ -50,7 +54,7 @@
         style="transition:stroke-dashoffset 0.5s ease, stroke 0.3s;"/>
     </svg>
     <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
-      <div id="ringNum" style="font-size:32px; font-weight:500; color:var(--text); line-height:1;">2000</div>
+      <div id="ringNum" style="font-size:32px; font-weight:500; line-height:1;">2000</div>
       <div id="ringLbl" style="font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-top:3px;">осталось</div>
       <div style="font-size:11px; color:var(--muted); margin-top:4px;">съедено: <span id="eatenSp">0</span></div>
     </div>
@@ -63,30 +67,51 @@
 
 <div class="card">
   <div class="lbl">Добавить еду</div>
-  <div style="display:flex; gap:8px;">
-    <input type="text" id="foodInput" placeholder="Борщ, курица 200г, пиво 0.5…"
+  <div style="display:flex; gap:8px; margin-bottom:10px;">
+    <input type="text" id="foodInput" placeholder="Борщ, курица 200г…"
       style="flex:1; padding:10px 12px; font-size:14px; border:1px solid #333; border-radius:var(--radius-sm); background:var(--bg); color:var(--text);">
     <button onclick="addFood()"
       style="background:var(--text); color:var(--bg); border:none; border-radius:var(--radius-sm); font-size:14px; font-weight:500; padding:10px 16px;">
       OK
     </button>
   </div>
-  <div style="display:flex; gap:6px; margin-top:10px;">
+
+  <!-- Meal selector -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px;">
+    <button id="meal-breakfast" onclick="setMeal('breakfast')"
+      style="padding:8px 6px; border-radius:var(--radius-sm); border:1px solid #333; background:var(--text); color:var(--bg); font-size:12px;">
+      🌅 Завтрак
+    </button>
+    <button id="meal-snack" onclick="setMeal('snack')"
+      style="padding:8px 6px; border-radius:var(--radius-sm); border:1px solid #333; background:transparent; color:var(--muted); font-size:12px;">
+      🍎 Перекус
+    </button>
+    <button id="meal-lunch" onclick="setMeal('lunch')"
+      style="padding:8px 6px; border-radius:var(--radius-sm); border:1px solid #333; background:transparent; color:var(--muted); font-size:12px;">
+      ☀️ Обед
+    </button>
+    <button id="meal-dinner" onclick="setMeal('dinner')"
+      style="padding:8px 6px; border-radius:var(--radius-sm); border:1px solid #333; background:transparent; color:var(--muted); font-size:12px;">
+      🌙 Ужин
+    </button>
+  </div>
+
+  <!-- Eaten / Planned -->
+  <div style="display:flex; gap:6px;">
     <button id="btnEaten" onclick="setType('eaten')"
-      style="flex:1; padding:8px; border-radius:var(--radius-sm); border:1px solid #333; background:var(--text); color:var(--bg); font-size:12px;">
+      style="flex:1; padding:7px; border-radius:var(--radius-sm); border:1px solid #1a9e75; background:rgba(26,158,117,0.15); color:#1a9e75; font-size:11px; letter-spacing:1px; text-transform:uppercase;">
       ✓ Съел
     </button>
     <button id="btnPlanned" onclick="setType('planned')"
-      style="flex:1; padding:8px; border-radius:var(--radius-sm); border:1px solid #333; background:transparent; color:var(--muted); font-size:12px;">
+      style="flex:1; padding:7px; border-radius:var(--radius-sm); border:1px solid #333; background:transparent; color:var(--muted); font-size:11px; letter-spacing:1px; text-transform:uppercase;">
       ◷ Планирую
     </button>
   </div>
-  <div id="errorMsg" style="display:none; font-size:12px; color:var(--danger); margin-top:8px;"></div>
 </div>
 
 <div id="manualPanel" style="display:none;" class="card">
   <div class="lbl">Не найдено — введи вручную</div>
-  <div style="font-size:14px; color:var(--text); margin-bottom:10px;">Продукт: <strong id="manualName"></strong></div>
+  <div style="font-size:14px; margin-bottom:10px;">Продукт: <strong id="manualName"></strong></div>
   <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
     <input type="number" id="manualKcal" placeholder="Калории"
       style="width:110px; padding:10px 12px; font-size:14px; border:1px solid #333; border-radius:var(--radius-sm); background:var(--bg); color:var(--text);">
@@ -94,18 +119,19 @@
     <button onclick="confirmManual()" style="background:var(--text); color:var(--bg); border:none; border-radius:var(--radius-sm); font-size:13px; font-weight:500; padding:10px 14px;">Добавить</button>
     <button onclick="cancelManual()" style="background:none; border:1px solid #333; border-radius:var(--radius-sm); font-size:13px; padding:10px 14px; color:var(--muted);">Отмена</button>
   </div>
-  <div style="font-size:11px; color:var(--muted); margin-top:8px;">Сохранится в базу на эту сессию</div>
+  <div style="font-size:11px; color:var(--muted); margin-top:8px;">Сохранится в базу навсегда</div>
 </div>
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-  <div class="lbl" style="margin-bottom:0;">Список</div>
-  <button onclick="clearAll()" style="font-size:11px; color:var(--muted); background:none; border:none; text-transform:uppercase; letter-spacing:1px;">Очистить</button>
-</div>
-<div id="foodList">
-  <div style="text-align:center; color:var(--muted); font-size:13px; padding:20px 0;">Пока ничего не добавлено</div>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+  <div class="lbl" style="margin-bottom:0;">
+    <span id="dateLabel"></span>
+  </div>
+  <button onclick="clearToday()" style="font-size:11px; color:var(--muted); background:none; border:none; text-transform:uppercase; letter-spacing:1px;">Очистить день</button>
 </div>
 
-<div class="card" style="display:flex; justify-content:space-around; margin-top:14px;">
+<div id="foodList"></div>
+
+<div class="card" style="display:flex; justify-content:space-around; margin-top:4px;">
   <div style="text-align:center;">
     <div style="font-size:22px; font-weight:500; color:var(--accent);" id="sumEaten">0</div>
     <div style="font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-top:2px;">Съедено</div>
@@ -123,10 +149,43 @@
 </div>
 
 <script>
+const MEALS = {
+  breakfast: { label: 'Завтрак', icon: '🌅' },
+  snack:     { label: 'Перекус', icon: '🍎' },
+  lunch:     { label: 'Обед',    icon: '☀️' },
+  dinner:    { label: 'Ужин',    icon: '🌙' },
+};
+const MEAL_ORDER = ['breakfast', 'snack', 'lunch', 'dinner'];
+
+function todayKey() {
+  const d = new Date();
+  return `kcal_foods_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+function saveData() {
+  try {
+    localStorage.setItem(todayKey(), JSON.stringify(foods));
+    localStorage.setItem('kcal_goal', document.getElementById('goalInput').value);
+    localStorage.setItem('kcal_custom_db', JSON.stringify(customDB));
+  } catch(e) {}
+}
+function loadData() {
+  try {
+    const saved = localStorage.getItem(todayKey());
+    foods = saved ? JSON.parse(saved) : [];
+    const goal = localStorage.getItem('kcal_goal');
+    if (goal) document.getElementById('goalInput').value = goal;
+    const cdb = localStorage.getItem('kcal_custom_db');
+    if (cdb) Object.assign(customDB, JSON.parse(cdb));
+  } catch(e) {}
+}
+
 let foods = [];
 let currentType = 'eaten';
+let currentMeal = 'breakfast';
 let pendingName = '';
 let pendingType = '';
+let pendingMeal = '';
+let customDB = {};
 
 const DB = {
   'помидор':18,'помидоры':18,'томат':18,'капуста':25,'капуста белокочанная':25,
@@ -192,65 +251,79 @@ function getEmoji(name) {
   for (const [k,v] of Object.entries(EMOJIS)) if (l.includes(k)) return v;
   return '🍽️';
 }
-
 function parseGrams(name) {
   const m = name.match(/(\d+)\s*(г|гр|грамм|мл|ml|g)/i);
   return m ? parseInt(m[1]) : null;
 }
-
 function getKcal(name) {
   const l = name.toLowerCase().trim();
-  if (DB[l] !== undefined) return DB[l];
+  const allDB = { ...DB, ...customDB };
+  if (allDB[l] !== undefined) return allDB[l];
   const grams = parseGrams(name);
-  for (const [k,v] of Object.entries(DB)) {
+  for (const [k,v] of Object.entries(allDB)) {
     if (l.includes(k)) return grams ? Math.round(v * grams / 100) : v;
   }
   return null;
 }
 
+function setMeal(meal) {
+  currentMeal = meal;
+  MEAL_ORDER.forEach(m => {
+    const btn = document.getElementById('meal-' + m);
+    if (m === meal) {
+      btn.style.cssText = 'padding:8px 6px;border-radius:8px;border:1px solid #f0f0f0;background:#f0f0f0;color:#0f0f0f;font-size:12px;cursor:pointer;font-family:inherit;';
+    } else {
+      btn.style.cssText = 'padding:8px 6px;border-radius:8px;border:1px solid #333;background:transparent;color:#666;font-size:12px;cursor:pointer;font-family:inherit;';
+    }
+  });
+}
+
 function setType(t) {
   currentType = t;
-  const on = 'flex:1;padding:8px;border-radius:8px;border:1px solid #333;background:#f0f0f0;color:#0f0f0f;font-size:12px;cursor:pointer;font-family:inherit;';
-  const off = 'flex:1;padding:8px;border-radius:8px;border:1px solid #333;background:transparent;color:#666;font-size:12px;cursor:pointer;font-family:inherit;';
-  document.getElementById('btnEaten').style.cssText = t==='eaten'?on:off;
-  document.getElementById('btnPlanned').style.cssText = t==='planned'?on:off;
+  const eatenBtn = document.getElementById('btnEaten');
+  const plannedBtn = document.getElementById('btnPlanned');
+  if (t === 'eaten') {
+    eatenBtn.style.cssText = 'flex:1;padding:7px;border-radius:8px;border:1px solid #1a9e75;background:rgba(26,158,117,0.15);color:#1a9e75;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:inherit;';
+    plannedBtn.style.cssText = 'flex:1;padding:7px;border-radius:8px;border:1px solid #333;background:transparent;color:#666;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:inherit;';
+  } else {
+    eatenBtn.style.cssText = 'flex:1;padding:7px;border-radius:8px;border:1px solid #333;background:transparent;color:#666;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:inherit;';
+    plannedBtn.style.cssText = 'flex:1;padding:7px;border-radius:8px;border:1px solid #ba7517;background:rgba(186,117,23,0.15);color:#ba7517;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:inherit;';
+  }
 }
 
 function addFood() {
   const input = document.getElementById('foodInput');
   const name = input.value.trim();
   if (!name) return;
-  document.getElementById('errorMsg').style.display = 'none';
   const kcal = getKcal(name);
   if (kcal === null) {
     pendingName = name;
     pendingType = currentType;
+    pendingMeal = currentMeal;
     document.getElementById('manualName').textContent = name;
     document.getElementById('manualKcal').value = '';
     document.getElementById('manualPanel').style.display = 'block';
     input.value = '';
     return;
   }
-  foods.push({ id: Date.now(), name, kcal, type: currentType, emoji: getEmoji(name) });
+  foods.push({ id: Date.now(), name, kcal, type: currentType, meal: currentMeal, emoji: getEmoji(name) });
   input.value = '';
+  saveData();
   render();
 }
 
 function confirmManual() {
   const kcal = parseInt(document.getElementById('manualKcal').value);
   if (!kcal || kcal <= 0) return;
-  DB[pendingName.toLowerCase()] = kcal;
-  foods.push({ id: Date.now(), name: pendingName, kcal, type: pendingType, emoji: getEmoji(pendingName) });
+  customDB[pendingName.toLowerCase()] = kcal;
+  foods.push({ id: Date.now(), name: pendingName, kcal, type: pendingType, meal: pendingMeal, emoji: getEmoji(pendingName) });
   document.getElementById('manualPanel').style.display = 'none';
+  saveData();
   render();
 }
-
-function cancelManual() {
-  document.getElementById('manualPanel').style.display = 'none';
-}
-
-function deleteFood(id) { foods = foods.filter(f => f.id !== id); render(); }
-function clearAll() { foods = []; render(); }
+function cancelManual() { document.getElementById('manualPanel').style.display = 'none'; }
+function deleteFood(id) { foods = foods.filter(f => f.id !== id); saveData(); render(); }
+function clearToday() { if(confirm('Очистить весь день?')) { foods = []; saveData(); render(); } }
 
 function render() {
   const goal = parseInt(document.getElementById('goalInput').value) || 2000;
@@ -265,7 +338,6 @@ function render() {
   const ring = document.getElementById('ringFill');
   ring.style.strokeDashoffset = circ - Math.min(total/goal,1)*circ;
   ring.style.stroke = over?'#e24b4a':warn?'#ba7517':'#1a9e75';
-
   document.getElementById('ringNum').textContent = Math.abs(remaining);
   document.getElementById('ringNum').style.color = over?'#e24b4a':warn?'#ba7517':'#f0f0f0';
   document.getElementById('ringLbl').textContent = over?'перебор':'осталось';
@@ -276,27 +348,56 @@ function render() {
   document.getElementById('sumTotal').textContent = total;
   document.getElementById('sumTotal').style.color = over?'#e24b4a':'#f0f0f0';
 
+  const d = new Date();
+  document.getElementById('dateLabel').textContent =
+    `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+
+  // Render by meal sections
   const list = document.getElementById('foodList');
-  if (!foods.length) {
-    list.innerHTML = '<div style="text-align:center;color:#666;font-size:13px;padding:20px 0;">Пока ничего не добавлено</div>';
-    return;
-  }
-  list.innerHTML = foods.map(f=>`
-    <div class="food-item">
-      <span style="font-size:20px;">${f.emoji}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</div>
-        <div class="tag" style="color:${f.type==='eaten'?'#1a9e75':'#ba7517'};">${f.type==='eaten'?'съедено':'планирую'}</div>
+  let html = '';
+  let hasAny = false;
+
+  MEAL_ORDER.forEach(meal => {
+    const mealFoods = foods.filter(f => f.meal === meal);
+    if (!mealFoods.length) return;
+    hasAny = true;
+    const mealKcal = mealFoods.reduce((s,f)=>s+f.kcal,0);
+    const m = MEALS[meal];
+    html += `
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title">
+            <span style="font-size:16px;">${m.icon}</span>
+            <span>${m.label}</span>
+          </div>
+          <span class="meal-kcal">${mealKcal} ккал</span>
+        </div>
+        ${mealFoods.map(f => `
+          <div class="food-item">
+            <span style="font-size:18px;">${f.emoji}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</div>
+              <div class="tag" style="color:${f.type==='eaten'?'#1a9e75':'#ba7517'};">${f.type==='eaten'?'съедено':'планирую'}</div>
+            </div>
+            <span style="font-size:17px;font-weight:500;margin-right:4px;">${f.kcal}</span>
+            <button onclick="deleteFood(${f.id})" style="background:none;border:none;color:#555;font-size:14px;padding:0 0 0 4px;">✕</button>
+          </div>
+        `).join('')}
       </div>
-      <span style="font-size:18px;font-weight:500;">${f.kcal}</span>
-      <button onclick="deleteFood(${f.id})" style="background:none;border:none;color:#666;font-size:14px;padding:0 0 0 8px;">✕</button>
-    </div>
-  `).join('');
+    `;
+  });
+
+  if (!hasAny) {
+    html = '<div style="text-align:center;color:#666;font-size:13px;padding:20px 0;">Пока ничего не добавлено</div>';
+  }
+  list.innerHTML = html;
 }
 
 document.getElementById('foodInput').addEventListener('keydown', e=>{ if(e.key==='Enter') addFood(); });
-document.getElementById('goalInput').addEventListener('input', render);
+document.getElementById('goalInput').addEventListener('input', ()=>{ saveData(); render(); });
 document.getElementById('manualKcal').addEventListener('keydown', e=>{ if(e.key==='Enter') confirmManual(); });
+
+loadData();
 render();
 </script>
 </body>
